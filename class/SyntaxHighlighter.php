@@ -31,8 +31,11 @@ class SyntaxHighlighter {
 	
 	public function __construct() {
 		if (! is_admin() ) {
-			remove_shortcode( 'code' );
-			add_shortcode( 'code', array( $this, 'genericShortcodeHandler' ) );
+			$codeShortcodeHander = array( $this, 'genericShortcodeHandler' );
+			// overwrite theme shortcodes
+			add_action( 'after_setup_theme', function() use ( $codeShortcodeHander ) {
+				add_shortcode( 'code', $codeShortcodeHander );
+			}, 20);
 		}
 	}
 	
@@ -46,7 +49,7 @@ class SyntaxHighlighter {
 		
 		// wrap the content with the Enlighter generic shortcode
 		$enlighterAttributes = '';
-		array_walk( $attributes, function( $value, $key ) use (&$enlighterAttributes) {
+		array_walk( $attributes, function( $value, $key ) use ( &$enlighterAttributes ) {
 			$enlighterAttributes .= ' ' . $key . '="' . $value . '"';
 		});
 		$content = '[enlighter' . $enlighterAttributes . ']' . $content . '[/enlighter]';
