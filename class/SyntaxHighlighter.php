@@ -34,25 +34,27 @@ class SyntaxHighlighter {
 	
 	public function __construct() {
 		if (! is_admin() ) {
-			add_shortcode('code', array( $this, 'genericShortcodeHandler' ) );
+			add_shortcode( 'acode', array( $this, 'genericShortcodeHandler' ) );
 		}
 	}
 	
-	private function genericShortcodeHandler( $atts ) {
-		if ( isset( $atts['lang'] ) ) {
-			if ( isset( $_supportedLanguagesMap[$atts['lang']] ) ) {
-				$atts['lang'] = $_supportedLanguagesMap[$atts['lang']];
+	public function genericShortcodeHandler( $attributes, $content = '', $tagname='' ) {
+		if ( isset( $attributes['lang'] ) ) {
+			if ( isset( $this->_supportedLanguagesMap[$attributes['lang']] ) ) {
+				$attributes['lang'] = $this->_supportedLanguagesMap[$atts['lang']];
 			}
 		}
-		getEnlighterShortcodeHandle()->genericShortcodeHandler( $atts );
+		$this->getEnlighterShortcodeHandler()->genericShortcodeHandler( $attributes, $content );
 	}
 	
-	private function getEnlighterShortcodeHandle() {
-		if ( $_enlighterShortcodeHandle == null ){
+	private function getEnlighterShortcodeHandler() {
+		if ( $this->_enlighterShortcodeHandler == null ){
 			$enlighter_class = new ReflectionClass( 'Enlighter' );
-			$enlighter = $enlighter_class->getMethod( 'getInstance' )->invoke();
-			$_enlighterShortcodeHandle = $enlighter_class->getProperty( '_shortcodeHandler' )->getValue( $enlighter );
+			$enlighter = $enlighter_class->getMethod( 'getInstance' )->invoke( null );
+			$_shortcodeHandler_property = $enlighter_class->getProperty( '_shortcodeHandler' );
+			$_shortcodeHandler_property->setAccessible( true );
+			$this->_enlighterShortcodeHandler = $_shortcodeHandler_property->getValue( $enlighter );
 		}
-		return $_enlighterShortcodeHandle;
+		return $this->_enlighterShortcodeHandler;
 	}
 }
