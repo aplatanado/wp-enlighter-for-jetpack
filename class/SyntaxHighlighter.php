@@ -11,9 +11,6 @@ class SyntaxHighlighter {
 	// singleton instance
 	private static $__instance;
 	
-	// enlighter shortcode handler instance
-	private $_enlighterShortcodeHandler;
-
 	// supported languages mapping
 	private $_supportedLanguagesMap = array(
 		'sh' => 'shell'
@@ -34,27 +31,27 @@ class SyntaxHighlighter {
 	
 	public function __construct() {
 		if (! is_admin() ) {
-			add_shortcode( 'acode', array( $this, 'genericShortcodeHandler' ) );
+			remove_shortcode( 'code' );
+			add_shortcode( 'code', array( $this, 'genericShortcodeHandler' ) );
 		}
 	}
 	
-	public function genericShortcodeHandler( $attributes, $content = '', $tagname='' ) {
+	public function genericShortcodeHandler( $attributes = null, $content = '', $tagname='' ) {
+		// map specified language code to one supported by Enlighter
 		if ( isset( $attributes['lang'] ) ) {
 			if ( isset( $this->_supportedLanguagesMap[$attributes['lang']] ) ) {
-				$attributes['lang'] = $this->_supportedLanguagesMap[$atts['lang']];
+				$attributes['lang'] = $this->_supportedLanguagesMap[$attributes['lang']];
 			}
 		}
-		$this->getEnlighterShortcodeHandler()->genericShortcodeHandler( $attributes, $content );
-	}
-	
-	private function getEnlighterShortcodeHandler() {
-		if ( $this->_enlighterShortcodeHandler == null ){
-			$enlighter_class = new ReflectionClass( 'Enlighter' );
-			$enlighter = $enlighter_class->getMethod( 'getInstance' )->invoke( null );
-			$_shortcodeHandler_property = $enlighter_class->getProperty( '_shortcodeHandler' );
-			$_shortcodeHandler_property->setAccessible( true );
-			$this->_enlighterShortcodeHandler = $_shortcodeHandler_property->getValue( $enlighter );
-		}
-		return $this->_enlighterShortcodeHandler;
+		
+		// wrap the content with the Enlighter generic shortcode
+		$enlighterAttributes = '';
+		array_walk( $attributes, function( $value, $key ) use (&$enlighterAttributes) {
+			$enlighterAttributes .= ' ' . $key . '="' . $value . '"';
+		});
+		$content = '[enlighter' . $enlighterAttributes . ']' . $content . '[/enlighter]';
+		
+		// apply Enlighter shortcode handler
+		return do_shortcode( $content );
 	}
 }
