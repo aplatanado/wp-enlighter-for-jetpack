@@ -13,7 +13,8 @@ class SyntaxHighlighter {
 	
 	// supported languages mapping
 	private $_supportedLanguagesMap = array(
-		'sh' => 'shell'
+		'sh' => 'shell',
+		'cmd' => 'shell'
 	);
 	
 	// get singelton instance
@@ -42,6 +43,9 @@ class SyntaxHighlighter {
 	public function genericShortcodeHandler( $attributes = null, $content = '', $tagname='' ) {
 		// map specified language code to one supported by Enlighter
 		if ( isset( $attributes['lang'] ) ) {
+			if ( $attributes['lang'] == 'cmd' ) {
+				$attributes['linenumbers'] = 'false';
+			}
 			if ( isset( $this->_supportedLanguagesMap[$attributes['lang']] ) ) {
 				$attributes['lang'] = $this->_supportedLanguagesMap[$attributes['lang']];
 			}
